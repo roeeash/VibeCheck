@@ -17,7 +17,6 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 COPY packages/*/package.json ./packages/
 COPY apps/web/package.json ./apps/web/
-COPY apps/web/client/package.json ./apps/web/client/
 
 RUN pnpm install --frozen-lockfile
 
@@ -47,7 +46,6 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 COPY packages/*/package.json ./packages/
 COPY apps/web/package.json ./apps/web/
-COPY apps/web/client/package.json ./apps/web/client/
 
 RUN pnpm install --frozen-lockfile --prod
 
