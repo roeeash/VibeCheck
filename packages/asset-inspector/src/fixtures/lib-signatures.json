@@ -1,0 +1,72 @@
+[
+  {
+    "name": "react",
+    "fingerprints": ["React.createElement", "react.version", "__REACT"],
+    "duplicateRiskWeight": 1.0
+  },
+  {
+    "name": "react-dom",
+    "fingerprints": ["react-dom", "createRoot", "ReactDOM.render"],
+    "duplicateRiskWeight": 1.0
+  },
+  {
+    "name": "vue",
+    "fingerprints": ["Vue.prototype", "__vue__", "vue@"],
+    "duplicateRiskWeight": 1.0
+  },
+  {
+    "name": "angular",
+    "fingerprints": ["angular.module", "angular.bootstrap", "$injector"],
+    "duplicateRiskWeight": 1.0
+  },
+  {
+    "name": "lodash",
+    "fingerprints": ["lodash.VERSION", "_.chain", "_.groupBy"],
+    "duplicateRiskWeight": 1.0
+  },
+  {
+    "name": "moment",
+    "fingerprints": ["moment.fn.isUtc", "moment.locale", "moment.utcOffset"],
+    "duplicateRiskWeight": 0.9
+  },
+  {
+    "name": "date-fns",
+    "fingerprints": ["date-fns", "formatISO", "differenceInDays"],
+    "duplicateRiskWeight": 0.8
+  },
+  {
+    "name": "rxjs",
+    "fingerprints": ["rxjs", "Observable.prototype", "Subject.prototype"],
+    "duplicateRiskWeight": 0.9
+  },
+  {
+    "name": "axios",
+    "fingerprints": ["axios", "axios.create", "axios.interceptors"],
+    "duplicateRiskWeight": 0.8
+  },
+  {
+    "name": "jquery",
+    "fingerprints": ["jQuery", "$.ajax", "jQuery.prototype"],
+    "duplicateRiskWeight": 0.9
+  },
+  {
+    "name": "bootstrap",
+    "fingerprints": ["bootstrap", "Dropdown", "Tooltip"],
+    "duplicateRiskWeight": 0.7
+  },
+  {
+    "name": "chart.js",
+    "fingerprints": ["Chart", "Chart.helpers", "Chart.types"],
+    "duplicateRiskWeight": 0.8
+  },
+  {
+    "name": "d3",
+    "fingerprints": ["d3", "d3.select", "d3.scale"],
+    "duplicateRiskWeight": 0.8
+  },
+  {
+    "name": "three.js",
+    "fingerprints": ["THREE", "THREE.Scene", "THREE.WebGLRenderer"],
+    "duplicateRiskWeight": 0.8
+  }
+]

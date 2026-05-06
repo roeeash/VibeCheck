@@ -1,0 +1,12 @@
+export { DuplicateFetchDetector } from './duplicate-fetch.js';
+export { CrossComponentDupDetector } from './cross-component-dup.js';
+export { NPlusOneDetector } from './n-plus-one.js';
+export { WaterfallDetector } from './waterfall.js';
+export { CriticalPathDetector } from './critical-path.js';
+export { OverFetchDetector } from './overfetch.js';
+export { UnderPaginateDetector } from './under-paginate.js';
+export { CompressionDetector } from './compression.js';
+export { CacheHeadersDetector } from './cache-headers.js';
+export { HttpVersionDetector } from './http-version.js';
+export { OriginCountDetector } from './origin-count.js';
+export { InfiniteRefetchDetector } from './infinite-refetch.js';

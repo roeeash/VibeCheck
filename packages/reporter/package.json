@@ -1,0 +1,19 @@
+{
+  "name": "@vibecheck/reporter",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "scripts": {
+    "build": "tsup src/index.ts --format esm --dts --outDir dist"
+  },
+  "dependencies": {
+    "@vibecheck/core": "workspace:*",
+    "@vibecheck/correlator": "workspace:*"
+  },
+  "devDependencies": {
+    "typescript": "^5.4.0",
+    "tsup": "^8.0.0"
+  }
+}

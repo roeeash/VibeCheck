@@ -1,0 +1,21 @@
+{
+  "name": "@vibecheck/injector",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "scripts": {
+    "build": "tsup src/index.ts --format esm --dts --outDir dist && esbuild src/perf-observer.ts --bundle --format=iife --outfile=dist/perf-observer.js --target=es2022"
+  },
+  "dependencies": {
+    "@vibecheck/core": "workspace:*"
+  },
+  "devDependencies": {
+    "typescript": "^5.4.0",
+    "tsup": "^8.0.0",
+    "esbuild": "^0.20.0",
+    "playwright": "^1.44.0",
+    "@types/node": "^20.11.0"
+  }
+}
