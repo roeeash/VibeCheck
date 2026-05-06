@@ -13,17 +13,13 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libx11-xcb1 libx11-6 fonts-liberation xdg-utils wget ca-certificates \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy manifests for dependency installation (cached layer)
-COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
-COPY packages/*/package.json ./packages/
-COPY apps/web/package.json ./apps/web/
-
-RUN pnpm install --frozen-lockfile
-
-# Copy all source
+# Copy everything
 COPY . .
 
-# Install Chromium (cached browser download)
+# Install all dependencies (no frozen lockfile — may differ from dev OS)
+RUN pnpm install
+
+# Install Playwright Chromium
 RUN npx playwright install --with-deps chromium
 
 # Build all packages + web app
@@ -44,17 +40,14 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libx11-xcb1 libx11-6 fonts-liberation xdg-utils ca-certificates \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy workspace manifests + install production deps only
-COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
-COPY packages/*/package.json ./packages/
-COPY apps/web/package.json ./apps/web/
-
-RUN pnpm install --frozen-lockfile --prod
-
 # Copy built artifacts from builder
+COPY --from=builder /app/package.json /app/pnpm-lock.yaml /app/pnpm-workspace.yaml ./
+COPY --from=builder /app/packages/*/package.json ./packages/
+COPY --from=builder /app/apps/web/package.json ./apps/web/
 COPY --from=builder /app/packages/*/dist ./packages/
 COPY --from=builder /app/apps/web/dist ./apps/web/dist
 COPY --from=builder /app/apps/web/client/dist ./apps/web/client/dist
+COPY --from=builder /app/node_modules ./node_modules
 
 # Copy Playwright Chromium from builder
 COPY --from=builder /root/.cache/ms-playwright /root/.cache/ms-playwright
