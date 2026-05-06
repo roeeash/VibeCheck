@@ -214,6 +214,9 @@ importers:
       '@vibecheck/core':
         specifier: workspace:*
         version: link:../core
+      '@vibecheck/correlator':
+        specifier: workspace:*
+        version: link:../correlator
       '@vibecheck/evidence':
         specifier: workspace:*
         version: link:../evidence

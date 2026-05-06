@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@vibecheck/core": "workspace:*",
+    "@vibecheck/correlator": "workspace:*",
     "@vibecheck/evidence": "workspace:*",
     "@vibecheck/injector": "workspace:*",
     "@vibecheck/reporter": "workspace:*",

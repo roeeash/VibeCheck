@@ -4,7 +4,7 @@
   "type": "module",
   "scripts": {
     "dev": "pnpm --filter @vibecheck/web dev",
-    "build": "pnpm --filter '@vibecheck/*' build && pnpm --filter @vibecheck/web build",
+    "build": "pnpm -r --filter '@vibecheck/*' --filter '!@vibecheck/web' run build && pnpm --filter @vibecheck/web build",
     "test": "vitest run",
     "lint": "eslint .",
     "typecheck": "tsc -b --noEmit",
