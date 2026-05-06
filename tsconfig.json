@@ -1,0 +1,12 @@
+{
+  "files": [],
+  "references": [
+    { "path": "packages/core" },
+    { "path": "packages/evidence" },
+    { "path": "packages/injector" },
+    { "path": "packages/correlator" },
+    { "path": "packages/reporter" },
+    { "path": "packages/engine" },
+    { "path": "apps/web" }
+  ]
+}

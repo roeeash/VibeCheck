@@ -1,0 +1,26 @@
+{
+  "name": "vibecheck-ultra",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "pnpm --filter @vibecheck/web dev",
+    "build": "pnpm --filter '@vibecheck/*' build && pnpm --filter @vibecheck/web build",
+    "test": "vitest run",
+    "lint": "eslint .",
+    "typecheck": "tsc -b --noEmit",
+    "clean": "find . -type d \\( -name dist -o -name .turbo -o -name .next \\) -exec rm -rf {} + 2>/dev/null || true"
+  },
+  "devDependencies": {
+    "typescript": "^5.4.0",
+    "tsup": "^8.0.0",
+    "vitest": "^2.0.0",
+    "eslint": "^8.57.0",
+    "@typescript-eslint/parser": "^7.0.0",
+    "@typescript-eslint/eslint-plugin": "^7.0.0",
+    "prettier": "^3.2.0",
+    "@types/node": "^20.11.0"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  }
+}
