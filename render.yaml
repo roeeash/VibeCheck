@@ -1,0 +1,13 @@
+services:
+  - type: web
+    name: vibecheck-ultra
+    env: docker
+    rootDir: .
+    dockerfilePath: Dockerfile
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PLAYWRIGHT_BROWSERS_PATH
+        value: /root/.cache/ms-playwright
+      - key: PORT
+        value: 3000
