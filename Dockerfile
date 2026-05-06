@@ -32,6 +32,8 @@ RUN pnpm build
 # ── Stage 2: Runtime ──
 FROM node:20-slim
 
+RUN npm install -g pnpm
+
 WORKDIR /app
 
 # Runtime system deps for Chromium
