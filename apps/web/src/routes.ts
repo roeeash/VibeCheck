@@ -4,7 +4,7 @@ import type { AuditRunner } from '@vibecheck/engine';
 import type { AuditRun } from '@vibecheck/engine';
 import { WebSocket } from 'ws';
 import type { AuditConfig } from '@vibecheck/core';
-import { auditConfigSchema } from '@vibecheck/core';
+import { auditConfigSchema, createAuditId } from '@vibecheck/core';
 import { stat, rm } from 'node:fs/promises';
 import { join } from 'node:path';
 
@@ -58,7 +58,7 @@ function auditRateLimiter(req: Request, res: Response, next: NextFunction): void
 export function createRouter(runner: AuditRunner, activeAudits: Map<string, { run: AuditRun; wsClients: Set<WebSocket> }>, _log: Logger): Router {
   const router = Router();
 
-  router.post('/audit', auditRateLimiter, async (req: Request, res: Response) => {
+  router.post('/audit', auditRateLimiter, (req: Request, res: Response) => {
     const parseResult = auditConfigSchema.safeParse(req.body);
     if (!parseResult.success) {
       return res.status(400).json({ error: 'Invalid config', details: parseResult.error.errors });
@@ -66,26 +66,22 @@ export function createRouter(runner: AuditRunner, activeAudits: Map<string, { ru
 
     const config: AuditConfig = parseResult.data;
 
-    const promise = runner.run(config);
-    const run = await promise;
-    activeAudits.set(run.id, { run, wsClients: new Set() });
+    // Generate ID upfront so we can return it immediately (avoids Render's 30s HTTP timeout)
+    const id = createAuditId();
+    const placeholder: AuditRun = { id, status: 'running', findings: [], startedAt: Date.now() };
+    activeAudits.set(id, { run: placeholder, wsClients: new Set() });
 
-    if (run.status === 'failed') {
-      return res.status(500).json({
-        error: run.userError?.message ?? 'Audit failed',
-        code: run.userError?.code ?? 'E_ENGINE_ERROR',
-        actions: run.userError?.actions ?? [],
-      });
-    }
-
-    return res.status(200).json({
-      id: run.id,
-      status: run.status,
-      findings: run.findings,
-      score: run.score,
-      startedAt: run.startedAt,
-      completedAt: run.completedAt,
+    // Fire-and-forget — client polls GET /api/audit/:id
+    runner.run(config, id).then(completedRun => {
+      const entry = activeAudits.get(id);
+      if (entry) entry.run = completedRun;
+    }).catch(err => {
+      _log.error({ err, id }, 'audit.backgroundError');
+      const entry = activeAudits.get(id);
+      if (entry) entry.run = { ...entry.run, status: 'failed', completedAt: Date.now() };
     });
+
+    return res.status(202).json({ id, status: 'running' });
   });
 
   router.get('/audit/:id', (req: Request, res: Response) => {

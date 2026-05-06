@@ -46,8 +46,8 @@ export class AuditRunner {
     this.registry.register(mod);
   }
 
-  async run(config: AuditConfig): Promise<AuditRun> {
-    const id = createAuditId();
+  async run(config: AuditConfig, id?: AuditId): Promise<AuditRun> {
+    id = id ?? createAuditId();
     const run: AuditRun = { id, status: 'running', findings: [], startedAt: Date.now() };
     this.log.info({ id, url: config.url }, 'audit.start');
 
@@ -130,7 +130,7 @@ export class AuditRunner {
         return {
           ...run, status: 'failed',
           error: { code: 'E_ENGINE_ERROR', module: 'engine', message: 'Browser crashed during audit — likely out of memory. The target site may be too resource-heavy for the current environment.', recoverable: false },
-          userError: { code: 'E_ENGINE_ERROR', message: 'Browser crashed during audit. The target site may be too heavy for this environment.', actions: ['Try a simpler page or deploy with more memory (≥1GB)'], severity: 'error' },
+          userError: { code: 'E_ENGINE_ERROR', message: 'Browser crashed during audit. The target site may be too heavy for this environment.', actions: ['Try a simpler page or deploy with more memory (≥1GB)'] },
           completedAt: Date.now(),
         };
       }
@@ -163,7 +163,7 @@ export class AuditRunner {
       return {
         ...run, status: 'failed',
         error: { code: 'E_ENGINE_ERROR', module: 'engine', message: `Unexpected error during audit: ${(err as Error).message}`, recoverable: false },
-        userError: { code: 'E_ENGINE_ERROR', message: `Unexpected error: ${(err as Error).message}`, actions: ['Check server logs for details'], severity: 'error' },
+        userError: { code: 'E_ENGINE_ERROR', message: `Unexpected error: ${(err as Error).message}`, actions: ['Check server logs for details'] },
         completedAt: Date.now(),
       };
     }

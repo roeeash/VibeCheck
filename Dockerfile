@@ -49,7 +49,7 @@ COPY --from=builder /root/.cache/ms-playwright /root/.cache/ms-playwright
 
 ENV NODE_ENV=production
 ENV PORT=3000
-ENV NODE_OPTIONS=--max-old-space-size=256
+ENV NODE_OPTIONS=--max-old-space-size=128
 ENV PLAYWRIGHT_BROWSERS_PATH=/root/.cache/ms-playwright
 ENV PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1
 

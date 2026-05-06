@@ -10,7 +10,8 @@ const BROWSER_ARGS = [
   '--disable-gpu',
   '--disable-software-rasterizer',
   '--no-zygote',
-  '--js-flags=--max-old-space-size=128',
+  '--single-process',            // eliminates zygote+renderer overhead (~150MB saved on Render free tier)
+  '--js-flags=--max-old-space-size=96',
   '--disable-extensions',
   '--disable-background-networking',
   '--disable-default-apps',

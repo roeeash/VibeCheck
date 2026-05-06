@@ -32,7 +32,11 @@ export class FlowRunner {
   private async executeStep(step: FlowStep): Promise<void> {
     switch (step.action) {
       case 'goto':
-        if (step.url) await this.page.goto(step.url, { waitUntil: 'networkidle', timeout: 30000 });
+        if (step.url) {
+          await this.page.goto(step.url, { waitUntil: 'load', timeout: 30000 });
+          // Soft-wait for network quiet; non-throwing so polling/SSE sites don't fail
+          await this.page.waitForLoadState('networkidle', { timeout: 5000 }).catch(() => {});
+        }
         break;
       case 'click':
         if (step.selector) await this.page.click(step.selector, { timeout: 10000 });
