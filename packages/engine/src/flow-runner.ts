@@ -48,10 +48,14 @@ export class FlowRunner {
         if (step.ms) await this.page.waitForTimeout(step.ms);
         break;
       case 'scroll':
-        if (step.to) await this.page.evaluate((sel) => document.querySelector(sel)?.scrollIntoView({ behavior: 'smooth' }), step.to);
+        if (step.to) {
+          await this.page.evaluate((sel) => document.querySelector(sel)?.scrollIntoView({ behavior: 'smooth' }), step.to)
+            .catch(() => {}); // non-critical; page may have closed
+        }
         break;
       case 'scroll_bottom':
-        await this.page.evaluate(() => window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' }));
+        await this.page.evaluate(() => window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' }))
+          .catch(() => {}); // non-critical; page may have closed
         await this.page.waitForTimeout(800);
         break;
       case 'screenshot':

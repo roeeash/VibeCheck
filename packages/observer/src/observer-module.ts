@@ -7,9 +7,6 @@ import {
   LoAFDetector,
   WebVitalsDetector,
   ForcedReflowDetector,
-  HeapLeakDetector,
-  DetachedDomDetector,
-  ListenerGrowthDetector,
   ReflowHotspotDetector,
   PaintStormDetector,
 } from './detectors/index.js';
@@ -29,18 +26,11 @@ export class ObserverModule implements AnalysisModule {
       new LoAFDetector(ctx),
       new WebVitalsDetector(ctx),
       new ForcedReflowDetector(ctx),
-      new HeapLeakDetector(ctx),
-      new DetachedDomDetector(ctx),
-      new ListenerGrowthDetector(ctx),
       new ReflowHotspotDetector(ctx),
       new PaintStormDetector(ctx),
     ];
 
-    try {
-      await ctx.page.context().addInitScript(WEB_VITALS_SCRIPT + REFLOW_DETECTOR_SCRIPT + LISTENER_COUNTER_SCRIPT);
-    } catch (err) {
-      ctx.logger.warn({ err }, 'Failed to inject observer scripts');
-    }
+    await ctx.page.context().addInitScript(WEB_VITALS_SCRIPT + REFLOW_DETECTOR_SCRIPT + LISTENER_COUNTER_SCRIPT);
 
     return ok(undefined);
   }

@@ -92,7 +92,8 @@ export class AuditRunner {
     const controller = new AbortController();
     const ctx: AuditContext = { url: config.url, flow, page, cdp: cdpBridge.getSession()!, evidenceStore: evidenceStore as unknown as import('@vibecheck/core').EvidenceStore, logger: this.log, config, signal: controller.signal };
 
-    // Register message bridge FIRST so it's available before any other init script emits postMessage
+    // Bridge MUST be added before initializeAll — module init scripts run in addInitScript order,
+    // so the bridge must be first in the queue or postMessage events from observer scripts are lost.
     await page.context().addInitScript(`(function(){if(window.__vibeMessageBridgeInjected)return;window.__vibeMessageBridgeInjected=true;window.addEventListener('message',function(e){var d=e.data;if(d&&d.__vibe){var r={};for(var k in d){if(k!=='__vibe')r[k]=d[k];}console.info(JSON.stringify(Object.assign({__vibe:true},r)));}});})()`);
 
     const modResult = await this.registry.initializeAll(ctx);
