@@ -2,6 +2,25 @@ import { chromium, type Browser, type BrowserContext, type Page } from 'playwrig
 import type { Result, VibeError } from '@vibecheck/core';
 import type { Logger } from 'pino';
 
+// Flags required for running Chromium inside Docker / containers with limited RAM
+const BROWSER_ARGS = [
+  '--no-sandbox',
+  '--disable-setuid-sandbox',
+  '--disable-dev-shm-usage',
+  '--disable-gpu',
+  '--disable-software-rasterizer',
+  '--no-zygote',
+  '--single-process',
+  '--js-flags=--max-old-space-size=256',
+  '--disable-extensions',
+  '--disable-background-networking',
+  '--disable-default-apps',
+  '--disable-sync',
+  '--disable-translate',
+  '--metrics-recording-only',
+  '--no-first-run',
+];
+
 export class BrowserLauncher {
   private browser: Browser | null = null;
   private log: Logger;
@@ -10,7 +29,10 @@ export class BrowserLauncher {
 
   async launch(): Promise<Result<{ context: BrowserContext; page: Page }, VibeError>> {
     try {
-      this.browser = await chromium.launch({ headless: true });
+      this.browser = await chromium.launch({
+        headless: true,
+        args: BROWSER_ARGS,
+      });
       const context = await this.browser.newContext({ viewport: { width: 1440, height: 900 } });
       const page = await context.newPage();
       return { ok: true, value: { context, page } };
