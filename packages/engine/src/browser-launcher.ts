@@ -10,8 +10,7 @@ const BROWSER_ARGS = [
   '--disable-gpu',
   '--disable-software-rasterizer',
   '--no-zygote',
-  '--single-process',
-  '--js-flags=--max-old-space-size=256',
+  '--js-flags=--max-old-space-size=128',
   '--disable-extensions',
   '--disable-background-networking',
   '--disable-default-apps',
@@ -19,6 +18,9 @@ const BROWSER_ARGS = [
   '--disable-translate',
   '--metrics-recording-only',
   '--no-first-run',
+  '--disable-background-timer-throttling',
+  '--disable-backgrounding-occluded-windows',
+  '--disable-renderer-backgrounding',
 ];
 
 export class BrowserLauncher {
