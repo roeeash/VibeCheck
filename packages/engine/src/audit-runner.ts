@@ -51,13 +51,21 @@ export class AuditRunner {
     const run: AuditRun = { id, status: 'running', findings: [], startedAt: Date.now() };
     this.log.info({ id, url: config.url }, 'audit.start');
 
+    // Ensure output directory exists
+    const { mkdir } = await import('node:fs/promises');
+    try {
+      await mkdir(config.output.dir, { recursive: true });
+    } catch (err) {
+      this.log.warn({ err, dir: config.output.dir }, 'audit.outputDirCreate');
+    }
+
     const launcherResult = await this.launcher.launch();
     if (!launcherResult.ok) {
       const userError = classifyError(launcherResult.error);
       return { ...run, status: 'failed', error: launcherResult.error, userError, completedAt: Date.now() };
     }
 
-    const { page } = launcherResult.value;
+    let { page } = launcherResult.value;
     const bus = new EventBus(this.log);
     const cdpBridge = new CDPBridge(page, this.log, bus);
     const cdpResult = await cdpBridge.initialize();
@@ -100,36 +108,64 @@ export class AuditRunner {
     // Use addInitScript so perf-observer.ts survives navigation (page.evaluate is cleared on goto)
     await page.context().addInitScript(buildInjectorScript());
 
-    const flowRunner = new FlowRunner(page, this.log, bus);
-    const flowResult = await flowRunner.run(flow, controller.signal);
-
-    if (!flowResult.ok) {
-      await this.launcher.dispose();
-      const userError = classifyError(flowResult.error);
-      return { ...run, status: 'failed', error: flowResult.error, userError, completedAt: Date.now() };
-    }
-
-    const findings = await this.registry.finalizeAll();
-    await this.registry.disposeAll();
-    await evidenceStore.finalize();
-    await this.launcher.dispose();
-
-    const completedAt = Date.now();
-
-    // Generate report
-    const generator = new ReportGenerator();
-    const report = await generator.generate({
-      auditId: id,
-      url: config.url,
-      startedAt: run.startedAt,
-      completedAt,
-      findings,
-      outputDir: config.output.dir,
+    // Detect browser crash mid-audit (OOM kill, segfault, etc.)
+    page.on('close', () => {
+      this.log.warn({ id }, 'audit.browserCrash');
+      controller.abort();
     });
 
-    await generator.writeReport(report, run.outputDir!);
+    try {
+      const flowRunner = new FlowRunner(page, this.log, bus);
+      const flowResult = await flowRunner.run(flow, controller.signal);
 
-    this.log.info({ id, findings: findings.length, score: report.score.value }, 'audit.end');
-    return { ...run, status: 'completed', findings, score: report.score.value, scoreResult: report.score, report, completedAt };
+      if (!flowResult.ok) {
+        await this.launcher.dispose();
+        const userError = classifyError(flowResult.error);
+        return { ...run, status: 'failed', error: flowResult.error, userError, completedAt: Date.now() };
+      }
+
+      // Check if browser was closed mid-audit (OOM kill, crash)
+      if (page.isClosed()) {
+        await this.launcher.dispose();
+        return {
+          ...run, status: 'failed',
+          error: { code: 'E_ENGINE_ERROR', module: 'engine', message: 'Browser crashed during audit — likely out of memory. The target site may be too resource-heavy for the current environment.', recoverable: false },
+          userError: { code: 'E_ENGINE_ERROR', message: 'Browser crashed during audit. The target site may be too heavy for this environment.', actions: ['Try a simpler page or deploy with more memory (≥1GB)'], severity: 'error' },
+          completedAt: Date.now(),
+        };
+      }
+
+      const findings = await this.registry.finalizeAll();
+      await this.registry.disposeAll();
+      await evidenceStore.finalize();
+      await this.launcher.dispose();
+
+      const completedAt = Date.now();
+
+      // Generate report
+      const generator = new ReportGenerator();
+      const report = await generator.generate({
+        auditId: id,
+        url: config.url,
+        startedAt: run.startedAt,
+        completedAt,
+        findings,
+        outputDir: config.output.dir,
+      });
+
+      await generator.writeReport(report, run.outputDir!);
+
+      this.log.info({ id, findings: findings.length, score: report.score.value }, 'audit.end');
+      return { ...run, status: 'completed', findings, score: report.score.value, scoreResult: report.score, report, completedAt };
+    } catch (err) {
+      this.log.error({ err, id }, 'audit.unexpectedError');
+      await this.launcher.dispose().catch(() => {});
+      return {
+        ...run, status: 'failed',
+        error: { code: 'E_ENGINE_ERROR', module: 'engine', message: `Unexpected error during audit: ${(err as Error).message}`, recoverable: false },
+        userError: { code: 'E_ENGINE_ERROR', message: `Unexpected error: ${(err as Error).message}`, actions: ['Check server logs for details'], severity: 'error' },
+        completedAt: Date.now(),
+      };
+    }
   }
 }
