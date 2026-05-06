@@ -19,8 +19,8 @@ COPY . .
 # Install all dependencies (no frozen lockfile — may differ from dev OS)
 RUN pnpm install
 
-# Install Playwright Chromium
-RUN npx playwright install --with-deps chromium
+# Install Playwright Chromium (from engine package where playwright is a direct dep)
+RUN pnpm --filter @vibecheck/engine exec playwright install chromium
 
 # Build all packages + web app
 RUN pnpm build
