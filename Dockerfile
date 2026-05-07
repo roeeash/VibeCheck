@@ -5,13 +5,8 @@ RUN npm install -g pnpm
 
 WORKDIR /app
 
-# Install Playwright system deps
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    libnss3 libatk1.0-0 libatk-bridge2.0-0 libcups2 libdrm2 \
-    libxkbcommon0 libxcomposite1 libxdamage1 libxrandr2 libgbm1 \
-    libpango-1.0-0 libcairo2 libasound2 libxshmfence1 \
-    libx11-xcb1 libx11-6 fonts-liberation xdg-utils wget ca-certificates \
-    && rm -rf /var/lib/apt/lists/*
+# Install Playwright system deps — Playwright itself knows what its bundled Chromium needs
+RUN npx playwright install-deps chromium
 
 # Copy everything
 COPY . .
@@ -19,7 +14,7 @@ COPY . .
 # Install all dependencies
 RUN pnpm install
 
-# Install Playwright Chromium (from engine package where playwright is a direct dep)
+# Install Playwright Chromium
 RUN pnpm --filter @vibecheck/engine exec playwright install chromium
 
 # Build all packages + web app
@@ -33,13 +28,8 @@ FROM node:20-slim
 
 WORKDIR /app
 
-# Runtime system deps for Chromium
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    libnss3 libatk1.0-0 libatk-bridge2.0-0 libcups2 libdrm2 \
-    libxkbcommon0 libxcomposite1 libxdamage1 libxrandr2 libgbm1 \
-    libpango-1.0-0 libcairo2 libasound2 libxshmfence1 \
-    libx11-xcb1 libx11-6 fonts-liberation xdg-utils ca-certificates \
-    && rm -rf /var/lib/apt/lists/*
+# Install the exact system deps Playwright's Chromium requires — no manual list
+RUN npx playwright install-deps chromium
 
 # Copy deployed web app (node_modules + dist + client/dist)
 COPY --from=builder /prod-deps .

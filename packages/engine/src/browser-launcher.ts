@@ -2,16 +2,12 @@ import { chromium, type Browser, type BrowserContext, type Page } from 'playwrig
 import type { Result, VibeError } from '@vibecheck/core';
 import type { Logger } from 'pino';
 
-// Flags required for running Chromium inside Docker / containers with limited RAM
+// Minimal flags for running Chromium inside Docker / containers with limited RAM
 const BROWSER_ARGS = [
   '--no-sandbox',
   '--disable-setuid-sandbox',
   '--disable-dev-shm-usage',
   '--disable-gpu',
-  '--disable-software-rasterizer',
-  '--no-zygote',
-  '--single-process',            // eliminates zygote+renderer overhead (~150MB saved on Render free tier)
-  '--js-flags=--max-old-space-size=96',
   '--disable-extensions',
   '--disable-background-networking',
   '--disable-default-apps',
@@ -22,6 +18,7 @@ const BROWSER_ARGS = [
   '--disable-background-timer-throttling',
   '--disable-backgrounding-occluded-windows',
   '--disable-renderer-backgrounding',
+  '--js-flags=--max-old-space-size=128',
 ];
 
 export class BrowserLauncher {
