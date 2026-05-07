@@ -76,11 +76,12 @@ export const ERROR_CATALOG: Record<ErrorCode, AuditError> = {
 
 export function classifyError(err: unknown): AuditError {
   const msg = err instanceof Error ? err.message.toLowerCase() : String(err).toLowerCase();
-  if (msg.includes('dns') || msg.includes('getaddrinfo') || msg.includes('enotfound')) return ERROR_CATALOG.E_DNS_FAILURE;
-  if (msg.includes('timeout') || msg.includes('timed out')) return ERROR_CATALOG.E_TIMEOUT;
-  if (msg.includes('captcha')) return ERROR_CATALOG.E_CAPTCHA;
-  if (msg.includes('blocked') || msg.includes('403') || msg.includes('cloudflare')) return ERROR_CATALOG.E_BOT_BLOCKED;
-  if (msg.includes('ssl') || msg.includes('certificate') || msg.includes('self-signed')) return ERROR_CATALOG.E_SSL_ERROR;
-  if (msg.includes('empty') || msg.includes('empty response')) return ERROR_CATALOG.E_EMPTY_RESPONSE;
-  return ERROR_CATALOG.E_ENGINE_ERROR;
+  if (msg.includes('dns') || msg.includes('getaddrinfo') || msg.includes('enotfound')) return { ...ERROR_CATALOG.E_DNS_FAILURE, message: err instanceof Error ? err.message : String(err) };
+  if (msg.includes('timeout') || msg.includes('timed out')) return { ...ERROR_CATALOG.E_TIMEOUT, message: err instanceof Error ? err.message : String(err) };
+  if (msg.includes('captcha')) return { ...ERROR_CATALOG.E_CAPTCHA, message: err instanceof Error ? err.message : String(err) };
+  if (msg.includes('blocked') || msg.includes('403') || msg.includes('cloudflare')) return { ...ERROR_CATALOG.E_BOT_BLOCKED, message: err instanceof Error ? err.message : String(err) };
+  if (msg.includes('ssl') || msg.includes('certificate') || msg.includes('self-signed')) return { ...ERROR_CATALOG.E_SSL_ERROR, message: err instanceof Error ? err.message : String(err) };
+  if (msg.includes('empty') || msg.includes('empty response')) return { ...ERROR_CATALOG.E_EMPTY_RESPONSE, message: err instanceof Error ? err.message : String(err) };
+  // Default: always include the raw error message
+  return { ...ERROR_CATALOG.E_ENGINE_ERROR, message: err instanceof Error ? err.message : String(err) };
 }

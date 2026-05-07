@@ -61,6 +61,7 @@ export class AuditRunner {
 
     const launcherResult = await this.launcher.launch();
     if (!launcherResult.ok) {
+      this.log.error({ id, err: launcherResult.error }, 'audit.launchFailed');
       const userError = classifyError(launcherResult.error);
       return { ...run, status: 'failed', error: launcherResult.error, userError, completedAt: Date.now() };
     }
@@ -70,6 +71,7 @@ export class AuditRunner {
     const cdpBridge = new CDPBridge(page, this.log, bus);
     const cdpResult = await cdpBridge.initialize();
     if (!cdpResult.ok) {
+      this.log.error({ id, err: cdpResult.error }, 'audit.cdpFailed');
       await this.launcher.dispose();
       const userError = classifyError(cdpResult.error);
       return { ...run, status: 'failed', error: cdpResult.error, userError, completedAt: Date.now() };
@@ -98,6 +100,7 @@ export class AuditRunner {
 
     const modResult = await this.registry.initializeAll(ctx);
     if (!modResult.ok) {
+      this.log.error({ id, err: modResult.error }, 'audit.moduleInitFailed');
       await this.launcher.dispose();
       const userError = classifyError(modResult.error);
       return { ...run, status: 'failed', error: modResult.error, userError, completedAt: Date.now() };
@@ -120,6 +123,7 @@ export class AuditRunner {
       const flowResult = await flowRunner.run(flow, controller.signal);
 
       if (!flowResult.ok) {
+        this.log.error({ id, err: flowResult.error }, 'audit.flowFailed');
         await this.launcher.dispose();
         const userError = classifyError(flowResult.error);
         return { ...run, status: 'failed', error: flowResult.error, userError, completedAt: Date.now() };
