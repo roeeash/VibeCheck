@@ -78,7 +78,7 @@ export function createRouter(runner: AuditRunner, activeAudits: Map<string, { ru
     }).catch(err => {
       _log.error({ err, id }, 'audit.backgroundError');
       const entry = activeAudits.get(id);
-      if (entry) entry.run = { ...entry.run, status: 'failed', completedAt: Date.now() };
+      if (entry) entry.run = { ...entry.run, status: 'failed', completedAt: Date.now(), userError: { message: err instanceof Error ? err.message : String(err) } };
     });
 
     return res.status(202).json({ id, status: 'running' });
@@ -100,6 +100,7 @@ export function createRouter(runner: AuditRunner, activeAudits: Map<string, { ru
       score: entry.run.score,
       startedAt: entry.run.startedAt,
       completedAt: entry.run.completedAt,
+      error: entry.run.userError?.message,
     });
   });
 
