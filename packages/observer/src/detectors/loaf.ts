@@ -26,7 +26,7 @@ export class LoAFDetector implements Detector {
     const findings: Finding[] = [];
     const significant = this.entries.filter((e) => e.duration > 50);
     
-    if (significant.length > 5) {
+    if (significant.length > 15) {
       findings.push({
         id: createFindingId(this.name, 'loaf', 'systemic'),
         module: this.name,

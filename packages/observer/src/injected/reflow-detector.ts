@@ -9,6 +9,7 @@ export const REFLOW_DETECTOR_SCRIPT = `
   var originalClientHeight = Object.getOwnPropertyDescriptor(Element.prototype, 'clientHeight');
 
   function emitReflow(el) {
+    if (window.__vibeScrolling) return;
     window.postMessage({ __vibe: true, type: 'cdp.forced_reflow', selector: el.tagName.toLowerCase(), timestamp: Date.now() }, '*');
   }
 

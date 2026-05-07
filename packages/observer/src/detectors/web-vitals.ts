@@ -38,15 +38,15 @@ export class WebVitalsDetector implements Detector {
     }
 
     for (const [name, reports] of byName) {
+      if (name === 'TTFB') continue; // TTFB measures audit-server network latency, not user experience
       const threshold = THRESHOLDS[name];
       if (!threshold) continue;
       const poor = reports.filter((r) => r.value > threshold.poor);
-      const needsImprovement = reports.filter((r) => r.value > threshold.needsImprovement && r.value <= threshold.poor);
-      
-      if (poor.length > 0 || needsImprovement.length > 0) {
+
+      if (poor.length > 0) {
         const worst = [...reports].sort((a, b) => b.value - a.value)[0];
         if (!worst) continue;
-        const severity = worst.value > threshold.poor ? 'high' : 'medium';
+        const severity: 'high' | 'medium' = 'high';
         const findingType = `bad_${name.toLowerCase()}` as const;
         findings.push({
           id: createFindingId(this.name, findingType, name),

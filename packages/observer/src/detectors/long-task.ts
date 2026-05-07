@@ -29,8 +29,9 @@ export class LongTaskDetector implements Detector {
 
   async finalize(): Promise<Finding[]> {
     const findings: Finding[] = [];
-    const significant = this.tasks.filter((t) => t.duration > 50);
-    
+    const significant = this.tasks.filter((t) => t.duration > 150);
+    if (significant.length < 3) return findings;
+
     for (const task of significant) {
       const severity = this.durationToSeverity(task.duration);
       findings.push({

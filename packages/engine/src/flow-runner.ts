@@ -49,13 +49,17 @@ export class FlowRunner {
         break;
       case 'scroll':
         if (step.to) {
+          await this.page.evaluate(() => { (window as unknown as Record<string, unknown>).__vibeScrolling = true; }).catch(() => {});
           await this.page.evaluate((sel) => document.querySelector(sel)?.scrollIntoView({ behavior: 'smooth' }), step.to)
-            .catch(() => {}); // non-critical; page may have closed
+            .catch(() => {});
+          await this.page.evaluate(() => { (window as unknown as Record<string, unknown>).__vibeScrolling = false; }).catch(() => {});
         }
         break;
       case 'scroll_bottom':
+        await this.page.evaluate(() => { (window as unknown as Record<string, unknown>).__vibeScrolling = true; }).catch(() => {});
         await this.page.evaluate(() => window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' }))
-          .catch(() => {}); // non-critical; page may have closed
+          .catch(() => {});
+        await this.page.evaluate(() => { (window as unknown as Record<string, unknown>).__vibeScrolling = false; }).catch(() => {});
         await this.page.waitForTimeout(800);
         break;
       case 'screenshot':
