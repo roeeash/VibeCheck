@@ -28,13 +28,13 @@ FROM node:20-slim
 
 WORKDIR /app
 
-# Install the exact system deps Playwright's Chromium requires — no manual list
-RUN npx playwright install-deps chromium
-
-# Copy deployed web app (node_modules + dist + client/dist)
+# Copy deployed web app FIRST — this brings in node_modules with playwright CLI
 COPY --from=builder /prod-deps .
 
-# Copy Playwright Chromium from builder
+# Install the exact system deps Playwright's Chromium requires — future-proof, no manual list
+RUN npx playwright install-deps chromium
+
+# Copy Playwright Chromium binary from builder
 COPY --from=builder /root/.cache/ms-playwright /root/.cache/ms-playwright
 
 ENV NODE_ENV=production
