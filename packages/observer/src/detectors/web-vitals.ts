@@ -39,6 +39,7 @@ export class WebVitalsDetector implements Detector {
 
     for (const [name, reports] of byName) {
       if (name === 'TTFB') continue; // TTFB measures audit-server network latency, not user experience
+      if (name === 'INP') continue; // INP requires real user interactions; our flow has none
       const threshold = THRESHOLDS[name];
       if (!threshold) continue;
       const poor = reports.filter((r) => r.value > threshold.poor);

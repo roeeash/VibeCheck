@@ -40,18 +40,18 @@ export class LoAFDetector implements Detector {
         evidence: [{ kind: 'cdp_trace', path: '', description: `${significant.length} LoAF entries` }],
         metrics: { count: significant.length, avgDuration: significant.reduce((s, e) => s + e.duration, 0) / significant.length },
         recommendation: 'Audit long-running scripts and reduce style/layout work during animation frames.',
-        scoreImpact: 30,
+        scoreImpact: 15,
       });
     }
 
-    for (const entry of significant.filter((e) => e.duration > 100)) {
+    for (const entry of significant.filter((e) => e.duration > 300)) {
       const styleDominated = entry.styleAndLayoutDuration > entry.duration * 0.5;
       findings.push({
         id: createFindingId(this.name, 'loaf', `ts-${entry.startTime}`),
         module: this.name,
         type: 'long_animation_frame',
         category: 'direct_impact',
-        severity: entry.duration > 200 ? 'critical' : 'high',
+        severity: entry.duration > 500 ? 'critical' : 'high',
         confidence: styleDominated ? 'medium' : 'medium',
         title: `Long animation frame: ${Math.round(entry.duration)}ms${styleDominated ? ' (style/layout dominated)' : ''}`,
         description: `A frame took ${Math.round(entry.duration)}ms. Blocking duration: ${Math.round(entry.blockingDuration)}ms. Style/layout: ${Math.round(entry.styleAndLayoutDuration)}ms.`,
@@ -61,7 +61,7 @@ export class LoAFDetector implements Detector {
         recommendation: styleDominated
           ? 'Reduce style recalculation by batching DOM reads/writes and avoiding layout-triggering properties in animations.'
           : 'Break up scripts with setTimeout or scheduler.yield() to yield to the main thread.',
-        scoreImpact: 30,
+        scoreImpact: 15,
       });
     }
     return findings;

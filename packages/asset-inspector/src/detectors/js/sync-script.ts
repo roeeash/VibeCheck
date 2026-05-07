@@ -14,8 +14,11 @@ export class SyncScriptDetector {
 
   finalize(scripts: ScriptInfo[]): Finding[] {
     const findings: Finding[] = [];
+    const seenUrls = new Set<string>();
 
     for (const script of scripts) {
+      if (seenUrls.has(script.url)) continue;
+      seenUrls.add(script.url);
       // Skip Vite/webpack dev-server injected scripts — not part of the app bundle
       if (this.isDevToolScript(script.url)) continue;
       // type="module" is implicitly deferred — skip these
