@@ -5,8 +5,8 @@ RUN npm install -g pnpm
 
 WORKDIR /app
 
-# Install Playwright system deps — Playwright itself knows what its bundled Chromium needs
-RUN npx playwright install-deps chromium
+# Install system deps for Playwright's Chromium — Playwright knows exactly what it needs
+RUN npx -y playwright@1.44.0 install-deps chromium
 
 # Copy everything
 COPY . .
@@ -28,11 +28,11 @@ FROM node:20-slim
 
 WORKDIR /app
 
-# Copy deployed web app FIRST — this brings in node_modules with playwright CLI
+# Copy deployed web app — node_modules, dist, client/dist
 COPY --from=builder /prod-deps .
 
-# Install the exact system deps Playwright's Chromium requires — future-proof, no manual list
-RUN npx playwright install-deps chromium
+# Install system deps for Playwright's Chromium — future-proof, no manual apt list
+RUN npx -y playwright@1.44.0 install-deps chromium
 
 # Copy Playwright Chromium binary from builder
 COPY --from=builder /root/.cache/ms-playwright /root/.cache/ms-playwright
