@@ -33,10 +33,17 @@ export function ModuleSection({ moduleName, findings, defaultOpen = false }: Mod
   const theoCount = findings.filter((f) => f.category === 'theoretical_debt').length;
   const critCount = findings.filter((f) => f.severity === 'critical').length;
 
+  const MODULE_WEIGHTS: Record<string, number> = {
+    observer: 25, proxy: 18, 'asset-inspector': 22,
+    render: 17, memory: 12, architect: 18,
+  };
   const SEVERITY_MAP: Record<string, number> = { critical: 1.0, high: 0.7, medium: 0.4, low: 0.2 };
   const CONFIDENCE_MAP: Record<string, number> = { high: 1.0, medium: 0.7, low: 0.4 };
-  const moduleScore = Math.round(Math.max(0, 100 - findings.reduce((acc, f) =>
-    acc + (f.scoreImpact || 0) * (SEVERITY_MAP[f.severity] ?? 0) * (CONFIDENCE_MAP[f.confidence] ?? 0), 0)));
+  const weight = MODULE_WEIGHTS[moduleName.toLowerCase()] ?? 20;
+  const rawPenalty = findings.reduce((acc, f) =>
+    acc + (f.scoreImpact || 0) * (SEVERITY_MAP[f.severity] ?? 0) * (CONFIDENCE_MAP[f.confidence] ?? 0), 0);
+  const capped = Math.min(rawPenalty, weight);
+  const moduleScore = Math.round(Math.max(0, (weight - capped) / weight * 100));
 
   return (
     <div style={{

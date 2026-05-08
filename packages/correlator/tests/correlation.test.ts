@@ -281,8 +281,9 @@ describe('computeVibeScore', () => {
     const result = computeVibeScore(correlated);
     // penalty = 10 * 0.7 (high severity) * 1.0 (high confidence) = 7
     // module: observer, weight=25, penalty=7, capped=7
-    // score = 100 - 7 = 93
-    expect(result.value).toBe(93);
+    // totalWeight = 112 (sum of all 6 modules), totalPenalty = 7
+    // score = (112 - 7) / 112 * 100 ≈ 94
+    expect(result.value).toBe(94);
     expect(result.grade).toBe('A');
     expect(result.moduleBreakdown.observer).toEqual({ weight: 25, penalty: 7, score: 18 });
   });
@@ -307,8 +308,9 @@ describe('computeVibeScore', () => {
     const result = computeVibeScore(correlated);
     // raw penalty = 20 * (10 * 0.7 * 1.0) = 140
     // observer weight = 25, capped at 25
-    // score = 100 - 25 = 75
-    expect(result.value).toBe(75);
+    // totalWeight = 112, totalPenalty = 25
+    // score = (112 - 25) / 112 * 100 ≈ 78
+    expect(result.value).toBe(78);
     expect(result.grade).toBe('B');
     expect(result.moduleBreakdown.observer.penalty).toBeGreaterThanOrEqual(25);
     expect(result.moduleBreakdown.observer.score).toBe(0);
@@ -331,8 +333,9 @@ describe('computeVibeScore', () => {
 
     const result = computeVibeScore(correlated);
     // Each module fully penalized: 25+18+22+17+12 = 94 capped
-    // score = 100 - 94 = 6 (grade F)
-    expect(result.value).toBeLessThanOrEqual(10);
+    // totalWeight = 112, totalPenalty = 94
+    // score = (112 - 94) / 112 * 100 ≈ 16 (grade F)
+    expect(result.value).toBe(16);
     expect(result.grade).toBe('F');
   });
 
@@ -359,7 +362,7 @@ describe('computeVibeScore', () => {
     expect(result.moduleBreakdown.render.weight).toBe(17);
   });
 
-  it('produces grade D for score 40-59', () => {
+  it('produces grade B for single critical finding', () => {
     const finding = makeFinding({
       id: 'f1',
       type: 'bad_lcp',
@@ -376,12 +379,13 @@ describe('computeVibeScore', () => {
 
     const result = computeVibeScore(correlated);
     // penalty = 12 * 1.0 * 1.0 = 12, observer weight=25, capped=12
-    // score = 100 - 12 = 88
-    expect(result.value).toBe(88);
+    // totalWeight = 112, totalPenalty = 12
+    // score = (112 - 12) / 112 * 100 ≈ 89
+    expect(result.value).toBe(89);
     expect(result.grade).toBe('B');
   });
 
-  it('produces grade C for score 60-74', () => {
+  it('produces grade A for single high severity finding', () => {
     const finding = makeFinding({
       id: 'f1',
       type: 'long_task',
@@ -398,8 +402,9 @@ describe('computeVibeScore', () => {
 
     const result = computeVibeScore(correlated);
     // penalty = 12 * 0.7 * 1.0 = 8.4, observer weight=25, capped=8.4
-    // score = 100 - 8.4 = 91.6 -> rounds to 92
-    expect(result.value).toBe(92);
+    // totalWeight = 112, totalPenalty = 8.4
+    // score = (112 - 8.4) / 112 * 100 ≈ 93
+    expect(result.value).toBe(93);
     expect(result.grade).toBe('A');
   });
 
@@ -497,8 +502,9 @@ describe('computeVibeScore', () => {
     // render penalty = 12 * 1.0 * 1.0 = 12, weight=17, capped=12
     // observer penalty = 8 * 0.4 * 1.0 = 3.2, weight=25, capped=3.2
     // total = 12 + 3.2 = 15.2
-    // score = 100 - 15.2 = 84.8 -> rounds to 85
-    expect(result.value).toBe(85);
+    // totalWeight = 112, totalPenalty = 15.2
+    // score = (112 - 15.2) / 112 * 100 ≈ 86
+    expect(result.value).toBe(86);
     expect(result.grade).toBe('B');
   });
 
@@ -519,8 +525,9 @@ describe('computeVibeScore', () => {
 
     const result = computeVibeScore(correlated);
     // penalty = 10 * 0.7 (high) * 0.4 (low confidence) = 2.8
-    // score = 100 - 2.8 = 97.2 -> rounds to 97
-    expect(result.value).toBe(97);
+    // totalWeight = 112, totalPenalty = 2.8
+    // score = (112 - 2.8) / 112 * 100 ≈ 98
+    expect(result.value).toBe(98);
     expect(result.grade).toBe('A');
   });
 });

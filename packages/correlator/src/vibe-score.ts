@@ -37,7 +37,13 @@ export function computeVibeScore(correlated: CorrelatedFindings): VibeScoreResul
     moduleBreakdown[mod] = { weight, penalty, score: Math.max(0, weight - capped) };
   }
 
-  const score = Math.max(0, Math.min(100, 100 - totalPenalty));
+  let unknownWeight = 0;
+  for (const mod of Object.keys(modulePenalties)) {
+    if (!(mod in MODULE_WEIGHTS)) unknownWeight += 20;
+  }
+  const totalWeight = Object.values(MODULE_WEIGHTS).reduce((s, w) => s + w, 0) + unknownWeight;
+  const raw = totalWeight > 0 ? ((totalWeight - totalPenalty) / totalWeight) * 100 : 100;
+  const score = Math.max(0, Math.min(100, raw));
   const roundedScore = Math.round(score);
 
   let grade: 'A' | 'B' | 'C' | 'D' | 'F';
