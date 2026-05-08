@@ -29,7 +29,7 @@ export class PaintStormDetector implements Detector {
           findings.push({
             id: createFindingId(this.name, 'paint_storm', 'analysis'),
             module: this.name,
-            type: 'direct_impact',
+            type: 'paint_storm',
             category: 'direct_impact',
             severity: 'medium',
             confidence: 'medium',

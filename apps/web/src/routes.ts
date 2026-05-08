@@ -93,6 +93,9 @@ export function createRouter(runner: AuditRunner, activeAudits: Map<string, { ru
     if (!entry) {
       return res.status(404).json({ error: 'Audit not found' });
     }
+    if (entry.run.status === 'failed') {
+      _log.warn({ id, userError: entry.run.userError, error: entry.run.error }, 'audit.failedResponse');
+    }
     return res.json({
       id: entry.run.id,
       status: entry.run.status,
@@ -100,7 +103,7 @@ export function createRouter(runner: AuditRunner, activeAudits: Map<string, { ru
       score: entry.run.score,
       startedAt: entry.run.startedAt,
       completedAt: entry.run.completedAt,
-      error: entry.run.userError?.message,
+      error: entry.run.status === 'failed' ? (entry.run.userError?.message ?? '(no error message available)') : undefined,
     });
   });
 

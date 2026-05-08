@@ -9,7 +9,7 @@ import { ResultsDashboard } from './components/results-dashboard.js';
 
 export function App() {
   const [phase, setPhase] = useState<Phase>('idle');
-  const [url, setUrl] = useState('');
+  const [url, setUrl] = useState<string>('');
   const [result, setResult] = useState<AuditResult | null>(null);
   const [scanError, setScanError] = useState<string | null>(null);
   const auditPromiseRef = useRef<Promise<AuditResult> | null>(null);

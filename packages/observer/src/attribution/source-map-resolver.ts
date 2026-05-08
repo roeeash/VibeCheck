@@ -1,12 +1,12 @@
-interface ResolvedFrame {
+export interface ResolvedFrame {
   file: string;
   line: number;
   column: number;
-  name?: string;
+  name: string | undefined;
   scriptUrl: string;
 }
 
-interface CDPStackFrame {
+export interface CDPStackFrame {
   url: string;
   lineNumber: number;
   columnNumber: number;
@@ -22,7 +22,7 @@ export class SourceMapResolver {
       if (!resolver) {
         return null;
       }
-      return { file: scriptUrl, line, column: col, scriptUrl };
+      return { file: scriptUrl, line, column: col, name: undefined, scriptUrl };
     } catch {
       return null;
     }

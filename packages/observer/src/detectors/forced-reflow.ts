@@ -3,7 +3,7 @@ import { createFindingId } from '@vibecheck/core';
 import type { Detector, DetectorContext } from '../types.js';
 
 interface ReflowEntry {
-  selector?: string;
+  selector: string | undefined;
   timestamp: number;
 }
 

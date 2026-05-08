@@ -25,7 +25,10 @@ export async function startAudit(url: string): Promise<AuditResult> {
     await new Promise(r => setTimeout(r, POLL_INTERVAL_MS));
     const result = await getAudit(id);
     if (result.status === 'completed') return result;
-    if (result.status === 'failed') throw new Error((result as unknown as { error?: string }).error ?? 'Audit failed');
+    if (result.status === 'failed') {
+      const errBody = result as unknown as { error?: string };
+      throw new Error(errBody.error ?? `Audit failed: no error details from server`);
+    }
   }
   throw new Error('Audit timed out after 5 minutes');
 }

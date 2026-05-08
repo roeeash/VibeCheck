@@ -1,6 +1,6 @@
 # AGENTS.md — VibeCheck Ultra
 
-> **This repo is currently docs-only.** No code, manifests, or build config exist yet. Stages 1–10 are defined in `instructions/`. Start building at `instruction1-foundation.md`.
+> **Active development.** Code for most modules exists under `packages/`. Follow Stage Order below for remaining work.
 
 ---
 

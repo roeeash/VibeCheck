@@ -1,4 +1,4 @@
-import type { Finding, AuditEvent } from '@vibecheck/core';
+import type { Finding, AuditEvent, FindingType } from '@vibecheck/core';
 import { createFindingId } from '@vibecheck/core';
 import type { Detector, DetectorContext } from '../types.js';
 
@@ -14,6 +14,12 @@ const THRESHOLDS: Record<string, { poor: number; needsImprovement: number }> = {
   CLS: { poor: 0.25, needsImprovement: 0.1 },
   TTFB: { poor: 1800, needsImprovement: 800 },
   FCP: { poor: 3000, needsImprovement: 1800 },
+};
+
+const VITAL_FINDING_TYPE: Record<string, FindingType> = {
+  LCP: 'bad_lcp',
+  CLS: 'bad_cls',
+  FCP: 'bad_fcp',
 };
 
 export class WebVitalsDetector implements Detector {
@@ -47,8 +53,9 @@ export class WebVitalsDetector implements Detector {
       if (poor.length > 0) {
         const worst = [...reports].sort((a, b) => b.value - a.value)[0];
         if (!worst) continue;
+        const findingType = VITAL_FINDING_TYPE[name];
+        if (!findingType) continue;
         const severity: 'high' | 'medium' = 'high';
-        const findingType = `bad_${name.toLowerCase()}` as const;
         findings.push({
           id: createFindingId(this.name, findingType, name),
           module: this.name,

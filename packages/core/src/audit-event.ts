@@ -48,6 +48,7 @@ export type AuditEvent =
   | { type: 'cdp.long_animation_frame'; entry: LoAFEntry }
   | { type: 'cdp.layout_shift'; shift: LayoutShiftEntry }
   | { type: 'cdp.forced_reflow'; selector?: string; timestamp: number }
+  | { type: 'cdp.paint'; startTime: number; timestamp: number }
   | { type: 'web_vital'; metric: WebVitalEntry }
   | { type: 'dom.mutation_burst'; count: number; timestamp: number }
   | { type: 'heap.snapshot'; path: string; size: number; timestamp: number }

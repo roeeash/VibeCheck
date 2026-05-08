@@ -20,7 +20,7 @@ export class ReflowHotspotDetector implements Detector {
       findings.push({
         id: createFindingId(this.name, 'reflow_hotspot', 'hot'),
         module: this.name,
-        type: 'direct_impact',
+        type: 'reflow_hotspot',
         category: 'direct_impact',
         severity: 'medium',
         confidence: 'medium',

@@ -5,7 +5,7 @@ import type { Detector, DetectorContext } from '../types.js';
 interface LongTaskEntry {
   duration: number;
   startTime: number;
-  url?: string;
+  url: string | undefined;
   timestamp: number;
 }
 

@@ -31,12 +31,7 @@ Paste URL → Headless Chromium scan → 6 modules analyze → Correlated report
 
 ### Output
 
-- Interactive results dashboard in the browser
-- `VIBE_REPORT.md` (Markdown download)
-- `vibe-trace.json` (CDP timeline)
-- `vibe-har.json` (network archive)
-- `vibe-heap-*.heapsnapshot`
-- `vibe-screenshots/`
+A single `VIBE_REPORT.md` — a downloadable Markdown file containing all findings, evidence references, severity breakdowns, and the Vibe-Score (0–100). It serves as the portable audit artifact you can share, file, or archive.
 
 ## The Six Audit Modules
 
@@ -232,12 +227,11 @@ packages/
   reporter/        — JSON + Markdown report rendering
 
 apps/
-  web/             — React frontend (landing, scan, results)
+  web/             — Audit engine server + React frontend (landing, scan, results)
   fixture-site/    — Deliberately broken Next.js app for E2E testing
 
 tests/
   e2e/             — End-to-end audits against fixture-site
-  unit/            — Unit tests for pure functions
 ```
 
 ## Fixture Site

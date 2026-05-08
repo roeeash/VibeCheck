@@ -7,3 +7,7 @@ coverage/
 .env.local
 vibe-out/
 .DS_Store
+.claude/
+*.tsbuildinfo
+.vite/
+VIBE_REPORT_*.md
