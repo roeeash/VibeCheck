@@ -11,7 +11,7 @@ export class OversizedImageDetector {
     const findings: Finding[] = [];
 
     for (const img of images) {
-      if (img.renderedWidth <= 0 || img.renderedHeight <= 0) continue;
+      if (!Number.isFinite(img.renderedWidth) || !Number.isFinite(img.renderedHeight) || img.renderedWidth < 1 || img.renderedHeight < 1) continue;
 
       const targetWidth = img.renderedWidth * DEVICE_PIXEL_RATIO;
       const targetHeight = img.renderedHeight * DEVICE_PIXEL_RATIO;
@@ -20,12 +20,14 @@ export class OversizedImageDetector {
       const excessHeight = img.naturalHeight - targetHeight;
 
       if (excessWidth <= targetWidth * 0.5 && excessHeight <= targetHeight * 0.5) continue;
+      if (!Number.isFinite(excessWidth) || !Number.isFinite(excessHeight)) continue;
 
       const name = img.url.split('/').pop() ?? img.url;
       const maxExcessRatio = Math.max(
         img.naturalWidth / targetWidth,
         img.naturalHeight / targetHeight,
       );
+      if (!Number.isFinite(maxExcessRatio)) continue;
 
       let severity: 'high' | 'medium' | 'low' = 'low';
       if (maxExcessRatio > 4) severity = 'high';

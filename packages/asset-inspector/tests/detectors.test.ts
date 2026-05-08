@@ -168,7 +168,70 @@ describe('Detectors', () => {
     });
   });
 
-  describe('OversizedImageDetector — edge cases', () => {
+  describe('OversizedImageDetector — guard edge cases', () => {
+    it('should skip images with NaN rendered dimensions', () => {
+      const images: ImageInfo[] = [{
+        url: 'https://example.com/nan.jpg',
+        naturalWidth: 2000,
+        naturalHeight: 2000,
+        renderedWidth: NaN,
+        renderedHeight: NaN,
+        transferSize: 500000,
+        mimeType: 'image/jpeg',
+        hasLazy: false,
+        hasFetchPriority: false,
+        hasWidthHeight: false,
+        hasAspectRatio: false,
+        belowFold: false,
+        isLcp: false,
+      }];
+
+      const findings = new OversizedImageDetector().finalize(images);
+      expect(findings.length).toBe(0);
+    });
+
+    it('should skip images with Infinity rendered dimensions', () => {
+      const images: ImageInfo[] = [{
+        url: 'https://example.com/inf.jpg',
+        naturalWidth: 2000,
+        naturalHeight: 2000,
+        renderedWidth: Infinity,
+        renderedHeight: Infinity,
+        transferSize: 500000,
+        mimeType: 'image/jpeg',
+        hasLazy: false,
+        hasFetchPriority: false,
+        hasWidthHeight: false,
+        hasAspectRatio: false,
+        belowFold: false,
+        isLcp: false,
+      }];
+
+      const findings = new OversizedImageDetector().finalize(images);
+      expect(findings.length).toBe(0);
+    });
+
+    it('should skip images with sub-1px rendered dimensions', () => {
+      const images: ImageInfo[] = [{
+        url: 'https://example.com/tiny.jpg',
+        naturalWidth: 2000,
+        naturalHeight: 2000,
+        renderedWidth: 0.5,
+        renderedHeight: 0.5,
+        transferSize: 500000,
+        mimeType: 'image/jpeg',
+        hasLazy: false,
+        hasFetchPriority: false,
+        hasWidthHeight: false,
+        hasAspectRatio: false,
+        belowFold: false,
+        isLcp: false,
+      }];
+
+      const findings = new OversizedImageDetector().finalize(images);
+      expect(findings.length).toBe(0);
+    });
+
     it('should skip images with zero rendered dimensions', () => {
       const images: ImageInfo[] = [{
         url: 'https://example.com/hidden.jpg',

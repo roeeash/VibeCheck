@@ -263,8 +263,11 @@ export class AssetInspectorModule implements AnalysisModule {
       });
 
       if (assetData?.images && Array.isArray(assetData.images)) {
+        const seenImageUrls = new Set<string>();
         for (const imgData of assetData.images) {
           if (!imgData.src) continue;
+          if (seenImageUrls.has(imgData.src)) continue;
+          seenImageUrls.add(imgData.src);
           const mimeType = this.imageUrlToMimeType.get(imgData.src) ?? 'image/jpeg';
           const transferSize = urlToTransferSize.get(imgData.src) ?? 0;
           const imageInfo: ImageInfo = {
