@@ -6,6 +6,7 @@ import type { DetectorContext } from '../src/types.js';
 
 function makeMockCtx(evaluateReturnValue: unknown): DetectorContext {
   return {
+    url: 'https://example.com',
     page: {
       evaluate: vi.fn().mockResolvedValue(evaluateReturnValue),
     },

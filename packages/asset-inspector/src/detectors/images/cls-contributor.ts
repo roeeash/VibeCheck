@@ -14,6 +14,7 @@ export class CLSContributorDetector {
     }
 
     for (const img of images) {
+      if (img.naturalHeight <= 0) continue;
       // Report images without width/height or aspect-ratio that might be contributing to CLS
       if (!img.hasWidthHeight && !img.hasAspectRatio) {
         findings.push({

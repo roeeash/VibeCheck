@@ -12,7 +12,7 @@ export class UnusedCSSDetector {
       const unused = sheet.totalBytes - sheet.usedBytes;
 
       // Report if > 50KB unused AND less than 30% used
-      if (unused > 50 * 1024 && sheet.usedBytes / sheet.totalBytes < 0.3) {
+      if (unused > 50 * 1024 && sheet.totalBytes > 0 && sheet.usedBytes / sheet.totalBytes < 0.3) {
         findings.push({
           id: createFindingId('asset-inspector', 'unused_css', sheet.url),
           module: 'asset-inspector',

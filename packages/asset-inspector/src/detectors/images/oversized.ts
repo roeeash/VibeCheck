@@ -2,7 +2,7 @@ import type { Finding } from '@vibecheck/core';
 import { createFindingId } from '@vibecheck/core';
 import type { ImageInfo } from '../../types.js';
 
-const DEVICE_PIXEL_RATIO = 2; // assume retina by default
+const DEVICE_PIXEL_RATIO = 2;
 
 export class OversizedImageDetector {
   static readonly name = 'oversized-image';
@@ -11,42 +11,52 @@ export class OversizedImageDetector {
     const findings: Finding[] = [];
 
     for (const img of images) {
-      const naturalPixels = img.naturalWidth * img.naturalHeight;
-      const renderedPixels = img.renderedWidth * img.renderedHeight * DEVICE_PIXEL_RATIO * DEVICE_PIXEL_RATIO;
+      if (img.renderedWidth <= 0 || img.renderedHeight <= 0) continue;
 
-      // If natural size > rendered size * 1.5 (with device pixel ratio), it's oversized
-      if (naturalPixels > renderedPixels * 1.5) {
-        const wasteFactor = naturalPixels / renderedPixels;
-        let severity: 'high' | 'medium' | 'low' = 'low';
-        if (wasteFactor > 4) severity = 'high';
-        else if (wasteFactor > 2) severity = 'medium';
+      const targetWidth = img.renderedWidth * DEVICE_PIXEL_RATIO;
+      const targetHeight = img.renderedHeight * DEVICE_PIXEL_RATIO;
 
-        findings.push({
-          id: createFindingId('asset-inspector', 'oversized_image', img.url),
-          module: 'asset-inspector',
-          type: 'oversized_image',
-          category: 'direct_impact',
-          severity,
-          confidence: 'high',
-          title: `Oversized image: ${img.url.split('/').pop()} (${img.naturalWidth}×${img.naturalHeight} → ${Math.round(img.renderedWidth)}×${Math.round(img.renderedHeight)})`,
-          description: `Image is ${img.naturalWidth}×${img.naturalHeight}px but rendered at ${Math.round(img.renderedWidth)}×${Math.round(img.renderedHeight)}px — ${(wasteFactor).toFixed(1)}× more pixels than needed. Serving the full-size image wastes bandwidth and decode time.`,
-          observedIn: `<img src="${img.url.split('/').pop()}"> · rendered ${Math.round(img.renderedWidth)}×${Math.round(img.renderedHeight)}px`,
-          evidence: [{
-            kind: 'har_entry',
-            path: img.url,
-            description: `Image natural size ${img.naturalWidth}x${img.naturalHeight} rendered at ${Math.round(img.renderedWidth)}x${Math.round(img.renderedHeight)} (${(wasteFactor).toFixed(1)}x waste)`,
-          }],
-          metrics: {
-            naturalWidth: img.naturalWidth,
-            naturalHeight: img.naturalHeight,
-            renderedWidth: img.renderedWidth,
-            renderedHeight: img.renderedHeight,
-            wasteFactor: parseFloat(wasteFactor.toFixed(2)),
-          },
-          recommendation: `Resize the image to ${Math.round(img.renderedWidth * DEVICE_PIXEL_RATIO)}x${Math.round(img.renderedHeight * DEVICE_PIXEL_RATIO)}px to eliminate waste.`,
-          scoreImpact: 12,
-        });
-      }
+      const excessWidth = img.naturalWidth - targetWidth;
+      const excessHeight = img.naturalHeight - targetHeight;
+
+      if (excessWidth <= targetWidth * 0.5 && excessHeight <= targetHeight * 0.5) continue;
+
+      const name = img.url.split('/').pop() ?? img.url;
+      const maxExcessRatio = Math.max(
+        img.naturalWidth / targetWidth,
+        img.naturalHeight / targetHeight,
+      );
+
+      let severity: 'high' | 'medium' | 'low' = 'low';
+      if (maxExcessRatio > 4) severity = 'high';
+      else if (maxExcessRatio > 2) severity = 'medium';
+
+      findings.push({
+        id: createFindingId('asset-inspector', 'oversized_image', img.url),
+        module: 'asset-inspector',
+        type: 'oversized_image',
+        category: 'direct_impact',
+        severity,
+        confidence: 'high',
+        title: `Oversized image: ${name} (${img.naturalWidth}×${img.naturalHeight} → ${Math.round(img.renderedWidth)}×${Math.round(img.renderedHeight)})`,
+        description: `${name}: natural ${img.naturalWidth}×${img.naturalHeight}px, rendered ${Math.round(img.renderedWidth)}×${Math.round(img.renderedHeight)}px — excess of ${Math.round(excessWidth)}×${Math.round(excessHeight)}px. Serving the full-size image wastes bandwidth and decode time.`,
+        observedIn: `<img src="${name}"> · rendered ${Math.round(img.renderedWidth)}×${Math.round(img.renderedHeight)}px`,
+        evidence: [{
+          kind: 'har_entry',
+          path: img.url,
+          description: `${name}: natural ${img.naturalWidth}x${img.naturalHeight} rendered ${Math.round(img.renderedWidth)}x${Math.round(img.renderedHeight)} — excess ${Math.round(excessWidth)}x${Math.round(excessHeight)}px`,
+        }],
+        metrics: {
+          naturalWidth: img.naturalWidth,
+          naturalHeight: img.naturalHeight,
+          renderedWidth: img.renderedWidth,
+          renderedHeight: img.renderedHeight,
+          excessWidth: Math.round(excessWidth),
+          excessHeight: Math.round(excessHeight),
+        },
+        recommendation: `Resize ${name} to ${Math.round(targetWidth)}×${Math.round(targetHeight)}px to eliminate waste.`,
+        scoreImpact: 12,
+      });
     }
 
     return findings;

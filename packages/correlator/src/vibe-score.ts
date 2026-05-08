@@ -4,10 +4,10 @@ const SEVERITY_MAP = { critical: 1.0, high: 0.7, medium: 0.4, low: 0.2 };
 const CONFIDENCE_MAP = { high: 1.0, medium: 0.7, low: 0.4 };
 
 const MODULE_WEIGHTS: Record<string, number> = {
-  observer: 20,
+  observer: 25,
   proxy: 18,
   'asset-inspector': 22,
-  render: 15,
+  render: 17,
   memory: 12,
   architect: 18,
 };
