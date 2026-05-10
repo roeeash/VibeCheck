@@ -317,17 +317,9 @@ Open [http://localhost:3000](http://localhost:3000). Paste a URL → audit runs 
 
 ## Output Artifacts
 
-Every completed audit produces:
+Every completed audit produces a `VIBE_REPORT.md` — a full Markdown report with all findings, scores, and recommendations.
 
-| File | Contents |
-|---|---|
-| `VIBE_REPORT.md` | Full report with all findings, scores, and recommendations |
-| `vibe-trace.json` | CDP performance timeline — load in Chrome DevTools Performance tab |
-| `vibe-har.json` | Network archive — open in [HAR Analyzer](https://toolbox.googleapps.com/apps/har_analyzer/) |
-| `vibe-heap-*.heapsnapshot` | Heap snapshots — open in Chrome DevTools Memory tab |
-| `vibe-screenshots/` | Screenshots taken during the audit flow |
-
-Download the report via `GET /api/audit/:id/download`. When running the API locally, artifacts are also written to disk under the output directory.
+Download it via `GET /api/audit/:id/download`.
 
 ---
 
