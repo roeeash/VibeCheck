@@ -24,6 +24,24 @@ function getIp(req: Request): string {
   return (req.headers['x-forwarded-for'] as string)?.split(',')[0]?.trim() ?? req.socket.remoteAddress ?? 'unknown';
 }
 
+function createErrorResponse(details: string, run: AuditRun): any {
+  const errorResponse: any = {
+    error: 'Report not available',
+    details,
+  };
+  
+  // Include audit failure information if available
+  if (run.status === 'failed' && run.userError) {
+    errorResponse.auditError = {
+      code: run.userError.code,
+      message: run.userError.message,
+      actions: run.userError.actions,
+    };
+  }
+  
+  return errorResponse;
+}
+
 function auditRateLimiter(req: Request, res: Response, next: NextFunction): void {
   const ip = getIp(req);
   const now = Date.now();
@@ -114,8 +132,18 @@ export function createRouter(runner: AuditRunner, activeAudits: Map<string, Audi
     const reportPath = join(run.outputDir, 'VIBE_REPORT.md');
     try {
       await stat(reportPath);
-    } catch {
-      return res.status(404).json({ error: 'Report not available' });
+    } catch (err) {
+      return res.status(404).json(createErrorResponse(
+        err instanceof Error ? err.message : String(err),
+        run
+      ));
+    }
+
+    if (!run.scoreResult) {
+      return res.status(404).json(createErrorResponse(
+        'No score result available for this audit',
+        run
+      ));
     }
 
     res.setHeader('Content-Type', 'text/markdown; charset=utf-8');
