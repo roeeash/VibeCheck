@@ -54,6 +54,16 @@ For every stage, decompose work into the three roles defined in `SUBAGENTS.md` a
 - `integration` subagent must run **after** `backend` completes (type dependency).
 - Main conversation reviews subagent output before marking a subtask done.
 
+### MCP Function Call Syntax
+
+When the user sends a message matching the pattern `functionName(args)` — with no surrounding context — treat it as an MCP tool invocation, not a bash command. Before doing anything else:
+
+1. Scan available `mcp__*` tools for a name match against `functionName`.
+2. If a match exists, invoke it immediately with `args` as the parameter.
+3. Do not ask for clarification. Do not re-interpret as CLI syntax.
+
+Example: `run_audit(example.com)` → invoke `mcp__vibecheck__run_audit` with `url: "https://example.com"`.
+
 ### Before Writing Any Code
 
 Claude must:
