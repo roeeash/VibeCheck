@@ -2,6 +2,8 @@
 
 > Black-box web performance auditor. Give it any live URL and get a detailed report of runtime, network, memory, and rendering issues — with reproducible evidence — without ever touching source code.
 
+**[Try it now →](https://vibecheck-ujc4.onrender.com/)** · [GitHub](https://github.com/roeeash/VibeCheck)
+
 ---
 
 ## What It Does
@@ -76,8 +78,8 @@ No setup. Just make requests. See [endpoints](#endpoints) and [examples](#exampl
 **Requirements:** Node.js 20+, pnpm, Playwright Chromium
 
 ```bash
-git clone https://github.com/your-org/vibecheck-ultra
-cd vibecheck-ultra
+git clone https://github.com/roeeash/VibeCheck
+cd VibeCheck
 pnpm install
 pnpm --filter @vibecheck/engine exec playwright install chromium
 pnpm --filter @vibecheck/api dev      # dev mode, auto-reload on port 4000
@@ -230,8 +232,8 @@ The MCP server wraps the REST API and exposes two tools that Claude (or any MCP-
 **Step 1 — Clone the repo and build the MCP server:**
 
 ```bash
-git clone https://github.com/your-org/vibecheck-ultra
-cd vibecheck-ultra
+git clone https://github.com/roeeash/VibeCheck
+cd VibeCheck
 pnpm install
 pnpm --filter @vibecheck/mcp build
 ```
@@ -297,11 +299,13 @@ Claude Code and Claude Desktop auto-load MCP servers from `.mcp.json` at the pro
 
 A React UI with a live scan progress view and interactive results dashboard.
 
-> The web app requires running the full monorepo locally. If you only need audit results, the REST API or MCP server are simpler options.
+**Hosted:** [https://vibecheck-ujc4.onrender.com/](https://vibecheck-ujc4.onrender.com/) — no setup, open and go.
+
+**Run locally:**
 
 ```bash
-git clone https://github.com/your-org/vibecheck-ultra
-cd vibecheck-ultra
+git clone https://github.com/roeeash/VibeCheck
+cd VibeCheck
 pnpm install
 pnpm --filter @vibecheck/engine exec playwright install chromium
 pnpm dev
