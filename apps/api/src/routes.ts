@@ -6,6 +6,7 @@ import type { AuditConfig } from '@vibecheck/core';
 import { auditConfigSchema, createAuditId } from '@vibecheck/core';
 import { stat, rm } from 'node:fs/promises';
 import { join } from 'node:path';
+import { persistRun } from './audit-store.js';
 
 interface IpState {
   concurrent: number;
@@ -69,11 +70,14 @@ export function createRouter(runner: AuditRunner, activeAudits: Map<string, Audi
 
     runner.run(config, id).then(completedRun => {
       activeAudits.set(id, completedRun);
+      persistRun(completedRun, log);
     }).catch(err => {
       log.error({ err, id }, 'audit.backgroundError');
       const existing = activeAudits.get(id);
       if (existing) {
-        activeAudits.set(id, { ...existing, status: 'failed', completedAt: Date.now(), userError: classifyError(err) });
+        const failed = { ...existing, status: 'failed' as const, completedAt: Date.now(), userError: classifyError(err) };
+        activeAudits.set(id, failed);
+        persistRun(failed, log);
       }
     });
 
@@ -116,7 +120,9 @@ export function createRouter(runner: AuditRunner, activeAudits: Map<string, Audi
 
     res.setHeader('Content-Type', 'text/markdown; charset=utf-8');
     res.setHeader('Content-Disposition', `attachment; filename="VIBE_REPORT_${id}.md"`);
-    res.sendFile(reportPath);
+    res.sendFile(reportPath, (err) => {
+      if (err && !res.headersSent) next(err);
+    });
   });
 
   router.delete('/audit/:id', async (req: Request, res: Response) => {
