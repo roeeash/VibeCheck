@@ -11,3 +11,6 @@ vibe-out/
 *.tsbuildinfo
 .vite/
 VIBE_REPORT_*.md
+AGENTS.md
+SUBAGENTS.md
+CLAUDE.md

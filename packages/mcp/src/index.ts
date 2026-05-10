@@ -68,7 +68,7 @@ async function runAuditAndWait(url: string): Promise<AuditResult> {
 
 function formatAuditResult(result: AuditResult): string {
   if (result.status === 'failed') {
-    return `Audit failed: ${result.error ?? 'unknown error'}`;
+    return `Audit ID: ${result.id}\nAudit failed: ${result.error ?? 'unknown error'}`;
   }
 
   const findings = result.findings ?? [];
@@ -77,6 +77,7 @@ function formatAuditResult(result: AuditResult): string {
     .slice(0, 10);
 
   const lines: string[] = [
+    `Audit ID: ${result.id}`,
     `Vibe-Score: ${result.score ?? 'N/A'}/100 (${result.scoreResult?.grade ?? '?'})`,
     `${result.scoreResult?.summary ?? ''}`,
     '',
