@@ -92,7 +92,7 @@ Type=simple
 User=vibecheck
 Group=vibecheck
 WorkingDirectory=/opt/vibecheck
-ExecStart=/usr/bin/node /opt/vibecheck/apps/web/dist/server.js
+ExecStart=/usr/bin/node /opt/vibecheck/apps/api/dist/server.js
 Restart=always
 RestartSec=5
 Environment=NODE_ENV=production
