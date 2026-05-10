@@ -72,23 +72,27 @@ curl http://localhost:4000/api/audit/<id>
 
 [Model Context Protocol](https://modelcontextprotocol.io) server — lets Claude (and any MCP-compatible LLM) run audits directly as tools.
 
-```bash
-pnpm --filter @vibecheck/mcp build
-```
+**Prerequisites:**
+- Build the MCP server: `pnpm --filter @vibecheck/mcp build`
+- Either the REST API server is running locally on port 4000, or you configure a remote API URL
 
 **Tools exposed:**
 
 - `run_audit(url)` — starts an audit, polls until complete (up to 5 min), returns score + top findings
 - `get_audit(id)` — fetch a previously started audit by ID
 
-**Claude Desktop / Claude Code config:**
+**Configuration:**
+
+Create or edit `.mcp.json` at the project root:
 
 ```json
 {
   "mcpServers": {
     "vibecheck": {
       "command": "node",
-      "args": ["/path/to/packages/mcp/dist/index.js"],
+      "args": [
+        "packages/mcp/dist/index.js"
+      ],
       "env": {
         "VIBECHECK_API_URL": "https://your-api-server.com"
       }
@@ -97,7 +101,8 @@ pnpm --filter @vibecheck/mcp build
 }
 ```
 
-`VIBECHECK_API_URL` defaults to `http://localhost:4000` if unset.
+- `VIBECHECK_API_URL` — optional. Defaults to `http://localhost:4000` if unset. Point to your deployed API server.
+- In Claude Desktop or Claude Code, the MCP server is loaded from this `.mcp.json` file automatically.
 
 ## Monorepo Structure
 
