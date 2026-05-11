@@ -221,77 +221,64 @@ curl -s -O "$API/api/audit/$ID/download"
 
 ## MCP Server
 
-The MCP server wraps the REST API and exposes two tools that Claude (or any MCP-compatible agent) can call directly. It polls for completion automatically — no manual polling loop needed.
+The MCP server is a **local dev auditor**. It targets your own running dev server (default port 5173), auto-starts the VibeCheck audit API when needed, and exposes two tools that Claude Code can call directly — no manual polling loop required.
 
 **Tools:**
-- `run_audit(url)` — runs a full audit, waits up to 5 minutes, returns Vibe-Score + top findings
-- `get_audit(id)` — fetches a previously started audit by ID
+- `audit_dev_server(path?)` — audits your local dev server. Starts the API automatically if it isn't running. Returns Vibe-Score and prioritized findings. `path` defaults to `/`.
+- `get_last_audit()` — returns the results of the most recently completed audit without re-running it.
 
-### Option A — Point at the hosted API (recommended)
+### Setup
 
-**Step 1 — Clone the repo and build the MCP server:**
+**Step 1 — Clone the repo and build:**
 
 ```bash
 git clone https://github.com/roeeash/VibeCheck
 cd VibeCheck
 pnpm install
+pnpm --filter @vibecheck/engine exec playwright install chromium
 pnpm --filter @vibecheck/mcp build
 ```
 
-**Step 2 — Create `.mcp.json` at the project root:**
+**Step 2 — Create `.mcp.json` at your project root (the repo you want to audit):**
 
 ```json
 {
   "mcpServers": {
     "vibecheck": {
       "command": "node",
-      "args": ["packages/mcp/dist/index.js"],
-      "env": {
-        "VIBECHECK_API_URL": "https://vibecheck-api-yixe.onrender.com"
-      }
+      "args": ["/path/to/VibeCheck/packages/mcp/dist/index.js"]
     }
   }
 }
 ```
 
-The MCP process runs locally on your machine but sends audit requests to the hosted API — no local Playwright or Chromium required.
-
-**Step 3 — Open the project in Claude Code.** The MCP server loads automatically from `.mcp.json`. Then just call:
-
-```
-run_audit(https://yoursite.com)
-```
-
-### Option B — Point at your own API instance
-
-Same steps as above, but set `VIBECHECK_API_URL` to your own server:
+Set `DEV_PORT` in `env` if your dev server runs on a port other than 5173:
 
 ```json
 {
   "mcpServers": {
     "vibecheck": {
       "command": "node",
-      "args": ["packages/mcp/dist/index.js"],
-      "env": {
-        "VIBECHECK_API_URL": "http://localhost:4000"
-      }
+      "args": ["/path/to/VibeCheck/packages/mcp/dist/index.js"],
+      "env": { "DEV_PORT": "3000" }
     }
   }
 }
 ```
 
-Omit `VIBECHECK_API_URL` entirely to default to `http://localhost:4000`.
+**Step 3 — Start your dev server, then open the project in Claude Code.**
+
+Claude Code auto-loads the MCP server from `.mcp.json`. The VibeCheck API starts automatically on first use — no separate process to manage.
 
 ### Using it
 
-In Claude Code, call tools by name:
-
 ```
-run_audit(https://yoursite.com)
-get_audit(audit-1778410876483-4)
+audit_dev_server()              # audit localhost:5173/
+audit_dev_server(/dashboard)    # audit a specific route
+get_last_audit()                # re-fetch the last result
 ```
 
-Claude Code and Claude Desktop auto-load MCP servers from `.mcp.json` at the project root — no manual registration step.
+The server auto-rebuilds `apps/api/dist/server.js` if it's missing. If you update the audit engine, rebuild with `pnpm --filter @vibecheck/asset-inspector build && pnpm --filter api build` and restart the API process (kill port 4000).
 
 ---
 
