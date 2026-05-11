@@ -6,7 +6,7 @@
         "packages/mcp/dist/index.js"
       ],
       "env": {
-        "VIBECHECK_API_URL": "https://vibecheck-api-yixe.onrender.com"
+        "DEV_PORT": "5173"
       }
     }
   }

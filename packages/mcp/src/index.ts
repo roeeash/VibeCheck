@@ -2,10 +2,17 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
 import { z } from 'zod';
+import { spawn } from 'node:child_process';
+import { fileURLToPath } from 'node:url';
+import { resolve } from 'node:path';
 
-const API_URL = (process.env.VIBECHECK_API_URL ?? 'http://localhost:4000').replace(/\/$/, '');
+const API_URL = 'http://localhost:4000';
+const DEV_PORT = process.env.DEV_PORT ?? '5173';
 const POLL_INTERVAL_MS = 3000;
 const POLL_TIMEOUT_MS = 5 * 60 * 1000;
+const API_BIN = resolve(fileURLToPath(import.meta.url), '../../../apps/api/dist/server.js');
+
+let lastAuditId: string | null = null;
 
 interface AuditResult {
   id: string;
@@ -32,6 +39,38 @@ interface Finding {
   scoreImpact: number;
 }
 
+async function isApiReady(): Promise<boolean> {
+  try {
+    const res = await fetch(`${API_URL}/health`, { signal: AbortSignal.timeout(1000) });
+    return res.ok;
+  } catch {
+    return false;
+  }
+}
+
+async function ensureApiRunning(): Promise<void> {
+  if (await isApiReady()) return;
+
+  process.stderr.write(`VibeCheck API not running — starting ${API_BIN}\n`);
+  const child = spawn('node', [API_BIN], {
+    detached: true,
+    stdio: ['ignore', 'ignore', 'inherit'],
+    env: { ...process.env },
+  });
+  child.unref();
+
+  for (let i = 0; i < 10; i++) {
+    await new Promise(r => setTimeout(r, 500));
+    if (await isApiReady()) return;
+  }
+  throw new Error('VibeCheck API failed to start within 5 seconds. Check that apps/api/dist/server.js exists (run `pnpm --filter api build`).');
+}
+
+function buildDevUrl(path: string): string {
+  const normalised = path.startsWith('/') ? path : `/${path}`;
+  return `http://localhost:${DEV_PORT}${normalised}`;
+}
+
 async function startAudit(url: string): Promise<string> {
   const res = await fetch(`${API_URL}/api/audit`, {
     method: 'POST',
@@ -54,6 +93,7 @@ async function pollAudit(id: string): Promise<AuditResult> {
 
 async function runAuditAndWait(url: string): Promise<AuditResult> {
   const id = await startAudit(url);
+  lastAuditId = id;
   const deadline = Date.now() + POLL_TIMEOUT_MS;
 
   while (Date.now() < deadline) {
@@ -96,29 +136,35 @@ function formatAuditResult(result: AuditResult): string {
 
 const server = new McpServer({
   name: 'vibecheck',
-  version: '0.0.1',
+  version: '0.1.0',
 });
 
 server.tool(
-  'run_audit',
-  'Run a full black-box performance audit on a URL. Polls until done (up to 5 minutes). Returns Vibe-Score, grade, and prioritized findings.',
-  { url: z.string().url().describe('The URL to audit (must be publicly accessible)') },
-  async ({ url }) => {
+  'audit_dev_server',
+  `Audit the local dev server running on port ${DEV_PORT}. Starts the VibeCheck API if needed, runs a full performance audit, and returns Vibe-Score and prioritized findings.`,
+  { path: z.string().default('/').describe('URL path to audit (e.g. "/dashboard"). Defaults to "/".') },
+  async ({ path }) => {
+    await ensureApiRunning();
+    const url = buildDevUrl(path);
+    process.stderr.write(`Auditing ${url}\n`);
     const result = await runAuditAndWait(url);
     return { content: [{ type: 'text', text: formatAuditResult(result) }] };
   },
 );
 
 server.tool(
-  'get_audit',
-  'Fetch the current status and results of a previously started audit by ID.',
-  { id: z.string().describe('Audit ID returned by run_audit or a prior get_audit call') },
-  async ({ id }) => {
-    const result = await pollAudit(id);
+  'get_last_audit',
+  'Return the results of the most recently completed audit without re-running it.',
+  {},
+  async () => {
+    if (!lastAuditId) {
+      return { content: [{ type: 'text', text: 'No audit has been run yet in this session.' }] };
+    }
+    const result = await pollAudit(lastAuditId);
     return { content: [{ type: 'text', text: formatAuditResult(result) }] };
   },
 );
 
 const transport = new StdioServerTransport();
 await server.connect(transport);
-process.stderr.write('VibeCheck MCP server running on stdio\n');
+process.stderr.write(`VibeCheck MCP server running (dev port: ${DEV_PORT})\n`);
