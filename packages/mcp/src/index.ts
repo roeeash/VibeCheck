@@ -2,15 +2,16 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
 import { z } from 'zod';
-import { spawn } from 'node:child_process';
+import { spawn, execSync } from 'node:child_process';
+import { existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
-import { resolve } from 'node:path';
+import { resolve, dirname } from 'node:path';
 
 const API_URL = 'http://localhost:4000';
 const DEV_PORT = process.env.DEV_PORT ?? '5173';
 const POLL_INTERVAL_MS = 3000;
 const POLL_TIMEOUT_MS = 5 * 60 * 1000;
-const API_BIN = resolve(fileURLToPath(import.meta.url), '../../../apps/api/dist/server.js');
+const API_BIN = resolve(dirname(fileURLToPath(import.meta.url)), '../../../apps/api/dist/server.js');
 
 let lastAuditId: string | null = null;
 
@@ -48,7 +49,20 @@ async function isApiReady(): Promise<boolean> {
   }
 }
 
+function buildApiIfNeeded(): void {
+  if (existsSync(API_BIN)) return;
+  process.stderr.write(`apps/api/dist/server.js not found — building API…\n`);
+  execSync('pnpm --filter api build', {
+    stdio: 'inherit',
+    cwd: resolve(dirname(fileURLToPath(import.meta.url)), '../../..'),
+  });
+  if (!existsSync(API_BIN)) {
+    throw new Error('Build succeeded but apps/api/dist/server.js still missing.');
+  }
+}
+
 async function ensureApiRunning(): Promise<void> {
+  buildApiIfNeeded();
   if (await isApiReady()) return;
 
   process.stderr.write(`VibeCheck API not running — starting ${API_BIN}\n`);

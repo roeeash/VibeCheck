@@ -150,7 +150,7 @@ export class AssetInspectorModule implements AnalysisModule {
       if (mimeType?.includes('image')) {
         this.imageUrlToMimeType.set(url, mimeType);
       } else if ((mimeType?.includes('javascript') || url.endsWith('.js') || url.endsWith('.mjs')) &&
-                 !url.endsWith('.tsx') && !url.endsWith('.ts') && !url.endsWith('.css')) {
+                 !url.split('?')[0]!.match(/\.(tsx?|jsx?|css)$/)) {
         if (!this.scriptInfos.some((s) => s.url === url)) {
           this.scriptInfos.push({
             url,
