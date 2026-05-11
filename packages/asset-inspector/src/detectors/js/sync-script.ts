@@ -6,10 +6,17 @@ export class SyncScriptDetector {
   static readonly name = 'sync-script';
 
   private isDevToolScript(url: string): boolean {
-    return url.includes('/@vite/') || url.includes('@vite/client') ||
+    if (
+      url.includes('/@vite/') || url.includes('@vite/client') ||
       url.includes('@react-refresh') || url.includes('webpack-dev-server') ||
       url.includes('webpack-hmr') || url.includes('hot-update') ||
-      url.includes('.vite/deps/') || url.includes('/@fs/');
+      url.includes('.vite/deps/') || url.includes('/@fs/')
+    ) return true;
+    // Vite dev-server serves source files with HMR timestamp params (e.g. App.tsx?t=123456)
+    const pathOnly = url.split('?')[0] ?? '';
+    if (/\.(tsx?|jsx?)$/.test(pathOnly)) return true;
+    if (/[?&]t=\d+/.test(url)) return true;
+    return false;
   }
 
   finalize(scripts: ScriptInfo[]): Finding[] {
